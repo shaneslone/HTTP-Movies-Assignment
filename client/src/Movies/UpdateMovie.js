@@ -5,19 +5,20 @@ import { useParams, useHistory } from 'react-router-dom';
 export default function UpdateMovie({ getMovieList }) {
   const { id } = useParams();
   const { push } = useHistory();
-  const initialValues = {
-    title: '',
-    director: '',
-    metascore: '',
-    stars: '',
-  };
-  const [values, setValues] = useState(initialValues);
+  const [values, setValues] = useState({});
 
   useEffect(() => {
     axios
       .get(`http://localhost:5000/api/movies/${id}`)
       .then(res => {
-        setValues(res.data);
+        const { title, director, metascore, stars, id } = res.data;
+        setValues({
+          id: id,
+          title: title,
+          director: director,
+          metascore: metascore,
+          stars: stars.toString(),
+        });
       })
       .catch(err => {
         console.log(err);
@@ -28,15 +29,17 @@ export default function UpdateMovie({ getMovieList }) {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
   const handleSubmit = e => {
+    console.log(values.stars.split(','));
     e.preventDefault();
-    // const editedValues = {
-    //   title: values.title.trim(),
-    //   director: values.director.trim(),
-    //   metascore: values.metascore,
-    //   stars: values.stars.split(','),
-    // };
+    const editedValues = {
+      id: values.id,
+      title: values.title.trim(),
+      director: values.director.trim(),
+      metascore: values.metascore,
+      stars: values.stars.split(','),
+    };
     axios
-      .put(`http://localhost:5000/api/movies/${id}`, values)
+      .put(`http://localhost:5000/api/movies/${id}`, editedValues)
       .then(res => {
         getMovieList();
         push(`/movies/${values.id}`);
@@ -82,9 +85,9 @@ export default function UpdateMovie({ getMovieList }) {
             />
           </label>
         </div>
-        {/* <div>
+        <div>
           <label>
-            Stars
+            <span className='form-label'>Stars</span>
             <input
               name='stars'
               type='text'
@@ -92,7 +95,7 @@ export default function UpdateMovie({ getMovieList }) {
               value={values.stars}
             />
           </label>
-        </div> */}
+        </div>
         <button>Submit Movie</button>
       </form>
     </div>
